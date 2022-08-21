@@ -1,4 +1,4 @@
-package estudo.s.account.entity;
+package estudo.s.account.data.entity;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.domain.Persistable;
