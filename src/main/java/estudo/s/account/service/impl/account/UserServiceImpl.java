@@ -1,16 +1,18 @@
 package estudo.s.account.service.impl.account;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import estudo.s.account.data.entity.User;
 import estudo.s.account.data.respository.UserRepository;
 import estudo.s.account.exception.IpsumException;
 import estudo.s.account.service.UserService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,8 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return repository.findAll();
+    public Page<User> findAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     @Override
