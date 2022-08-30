@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import estudo.s.account.data.entity.User;
 import estudo.s.account.data.respository.UserRepository;
-import estudo.s.account.exception.IpsumException;
 import estudo.s.account.service.UserService;
+import estudo.s.ipsum.exception.IpsumException;
 
 @Service
 public class UserServiceImpl implements UserService {

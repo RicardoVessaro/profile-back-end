@@ -28,6 +28,7 @@ import estudo.s.account.resource.assembler.UserAssembler;
 import estudo.s.account.resource.dto.UserDTO;
 import estudo.s.account.service.UserService;
 
+
 @RestController
 @RequestMapping(ResourceConstants.USER_BASE_URL)
 public class UserController {

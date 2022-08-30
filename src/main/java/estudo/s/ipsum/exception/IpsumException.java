@@ -1,4 +1,4 @@
-package estudo.s.account.exception;
+package estudo.s.ipsum.exception;
 
 import org.springframework.http.HttpStatus;
 
