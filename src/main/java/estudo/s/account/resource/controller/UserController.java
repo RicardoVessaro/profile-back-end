@@ -1,5 +1,6 @@
 package estudo.s.account.resource.controller;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -7,7 +8,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -67,7 +70,7 @@ public class UserController {
             return createResponse(optionalEntity.get());
         }
 
-        return ResponseEntity.noContent().build();
+        return noContent();
     }
 
     @PutMapping("/{id}")
@@ -81,10 +84,10 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable UUID id) {
+    public ResponseEntity<EntityModel<UserDTO>> delete(@PathVariable UUID id) {
         service.delete(id);
 
-        return ResponseEntity.noContent().build();
+        return noContent();
     }
 
     private ResponseEntity<EntityModel<UserDTO>> createResponse(User entity) {
@@ -97,18 +100,36 @@ public class UserController {
         return new ResponseEntity<>(assembler.toModel(dto), httpStatus);
     }
 
-    private ResponseEntity<?> createResponse(Page<User> entities) {
+    private ResponseEntity<PagedModel<EntityModel<UserDTO>>> createResponse(Page<User> entities) {
         return createResponse(entities, HttpStatus.OK);
     }
 
-    private ResponseEntity<?> createResponse(Page<User> entities, HttpStatus httpStatus) {
+    private ResponseEntity<PagedModel<EntityModel<UserDTO>>> createResponse(Page<User> entities, HttpStatus httpStatus) {
         Page<UserDTO> dtos = entities.map(entity -> {
-                    return modelMapper.map(entity, UserDTO.class);
-                });
+            return modelMapper.map(entity, UserDTO.class);
+        });
 
         return ResponseEntity
             .status(httpStatus)
             .body(assembler.toPagedModel(dtos));
+    }
+
+    private ResponseEntity<CollectionModel<EntityModel<UserDTO>>> createResponse(List<User> entities) {
+        return createResponse(entities);
+    }
+
+    private ResponseEntity<CollectionModel<EntityModel<UserDTO>>> createResponse(List<User> entities, HttpStatus httpStatus) {
+        List<UserDTO> dtos = entities.stream().map(entity -> {
+            return modelMapper.map(entity, UserDTO.class);
+        }).toList();
+
+        return ResponseEntity
+            .status(httpStatus)
+            .body(assembler.toCollectionModel(dtos));
+    }
+
+    private ResponseEntity<EntityModel<UserDTO>> noContent() {
+        return ResponseEntity.noContent().build();
     }
 
 }
