@@ -59,4 +59,18 @@ public class User implements Persistable<UUID> {
     public boolean isNew() {
         return id == null;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        User user = (User) object;
+
+        if (this.getId() == null && user.getId() == null ) {
+            return true;
+        
+        } else if(this.getId() != null && user.getId() == null) {
+            return false;
+        }
+
+        return this.getId().equals(user.getId());
+    }
 }

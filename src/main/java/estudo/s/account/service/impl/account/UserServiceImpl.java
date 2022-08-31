@@ -3,6 +3,8 @@ package estudo.s.account.service.impl.account;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.transaction.Transactional;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import estudo.s.account.service.UserService;
 import estudo.s.ipsum.exception.IpsumException;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
