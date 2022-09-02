@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 
 import estudo.s.account.data.entity.User;
 import estudo.s.account.service.UserService;
@@ -43,10 +44,7 @@ public class UserServiceImplTest {
 
         User expectedEntity = optionalEntity.get();
 
-        assertThat(entity.equals(expectedEntity)).isTrue();
-        assertThat(entity.getId().equals(expectedEntity.getId())).isTrue();
-        assertThat(entity.getName().equals(expectedEntity.getName())).isTrue();
-        assertThat(entity.getPassword().equals(expectedEntity.getPassword())).isTrue();
+        assertEquals(entity, expectedEntity);
     }
 
     @Test
@@ -76,11 +74,7 @@ public class UserServiceImplTest {
 
         User updatedEntity = service.findById(entity.getId()).get();
 
-        assertThat(entity.equals(updatedEntity)).isTrue();
-        assertThat(entity.getId().equals(updatedEntity.getId())).isTrue();
-        assertThat(entity.getName().equals(updatedEntity.getName())).isTrue();
-        assertThat(entity.getPassword().equals(updatedEntity.getPassword())).isTrue();
-
+        assertEquals(entity, updatedEntity);
     }
 
     @Test
@@ -92,7 +86,7 @@ public class UserServiceImplTest {
 
         User updatedEntity = service.update(id, entity);
 
-        assertThat(id.equals(updatedEntity.getId())).isTrue();
+        assertThat(id).isEqualTo(updatedEntity.getId());
     }
     
     @Test
@@ -112,7 +106,8 @@ public class UserServiceImplTest {
             .append("id '" + entity.getId() + "' ")
             .toString();
 
-        assertThat(ipsumException.getMessage().equals(expectedMessage)).isTrue();
+        assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);
+        assertThat(ipsumException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
     }
 
@@ -126,7 +121,8 @@ public class UserServiceImplTest {
 
         String expectedMessage = "Could not find Entity with id '" + entity.getId() + "'";
 
-        assertThat(ipsumException.getMessage().equals(expectedMessage)).isTrue();
+        assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);
+        assertThat(ipsumException.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -149,7 +145,15 @@ public class UserServiceImplTest {
 
         String expectedMessage = "Could not find Entity with id '" + entity.getId() + "'";
 
-        assertThat(ipsumException.getMessage().equals(expectedMessage)).isTrue();
+        assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);
+        assertThat(ipsumException.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    private void assertEquals(User actual, User expected) {
+        assertThat(actual).isEqualTo(expected);
+        assertThat(actual.getId()).isEqualTo(expected.getId());
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getPassword()).isEqualTo(expected.getPassword());
     }
 
 }

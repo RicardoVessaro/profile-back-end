@@ -29,8 +29,7 @@ public class UserAssembler implements RepresentationModelAssembler<UserDTO, Enti
     }
 
     public PagedModel<EntityModel<UserDTO>> toPagedModel(Page<UserDTO> dtos) {
-            PagedModel<EntityModel<UserDTO>> pagedModel = pagedAssembler
-                .toModel(dtos, this);
+            PagedModel<EntityModel<UserDTO>> pagedModel = pagedAssembler.toModel(dtos, this);
 
             pagedModel.add(linkTo(methodOn(UserController.class).insert(null)).withRel("create"));
 
