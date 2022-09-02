@@ -50,7 +50,7 @@ public class UserController {
 
         entity = service.insert(entity);
 
-        return createResponse(entity);
+        return createResponse(entity, HttpStatus.CREATED);
     }
 
     @GetMapping
