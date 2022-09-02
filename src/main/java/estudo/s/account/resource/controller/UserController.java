@@ -1,6 +1,5 @@
 package estudo.s.account.resource.controller;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,7 +7,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -113,20 +111,6 @@ public class UserController {
         return ResponseEntity
             .status(httpStatus)
             .body(assembler.toPagedModel(dtos));
-    }
-
-    private ResponseEntity<CollectionModel<EntityModel<UserDTO>>> createResponse(List<User> entities) {
-        return createResponse(entities);
-    }
-
-    private ResponseEntity<CollectionModel<EntityModel<UserDTO>>> createResponse(List<User> entities, HttpStatus httpStatus) {
-        List<UserDTO> dtos = entities.stream().map(entity -> {
-            return modelMapper.map(entity, UserDTO.class);
-        }).toList();
-
-        return ResponseEntity
-            .status(httpStatus)
-            .body(assembler.toCollectionModel(dtos));
     }
 
     private ResponseEntity<EntityModel<UserDTO>> noContent() {
