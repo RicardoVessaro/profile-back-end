@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
         } else if (!entityChanges.getId().equals(id)) {
             String message = new StringBuilder()
-                    .append("ID '" + id.toString() +"' ")
+                    .append("ID '" + id +"' ")
                     .append("is different of entity ")
                     .append("id '" + entityChanges.getId() + "' ")
                     .toString();
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
     private User findByIdOrElseThrow(UUID id) {
         User entity = findById(id)
-                .orElseThrow(() -> IpsumException.notFound("Could not find Entity with id '" + id.toString() + "'"));
+                .orElseThrow(() -> IpsumException.notFound("Could not find Entity with id '" + id + "'"));
         return entity;
     }
 }
