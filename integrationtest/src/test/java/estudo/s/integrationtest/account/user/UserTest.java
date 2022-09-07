@@ -416,7 +416,6 @@ public class UserTest {
             body("_links.first", notNullValue()).
             body("_links.first.href", equalTo(paginationLink(0, 1))).
 
-            body("_links", notNullValue()).
             body("_links.prev", notNullValue()).
             body("_links.prev.href", equalTo(paginationLink(1, 1))).
 
@@ -438,6 +437,148 @@ public class UserTest {
             body("page.totalElements", equalTo(3)).
             body("page.totalPages", equalTo(3)).
             body("page.number", equalTo(2));
+    }
+
+    @Test
+    public void testFindUniquePage() {
+        JSONObject json0 = new JSONObject()
+            .put("name", "Integration Test 0")
+            .put("password", "0000");
+
+        JSONObject json1 = new JSONObject()
+            .put("name", "Integration Test 1")
+            .put("password", "1111");
+
+        JSONObject json2 = new JSONObject()
+            .put("name", "Integration Test 2")
+            .put("password", "2222");
+
+        String id0 = insertOne(json0);
+        String id1 = insertOne(json1);
+        String id2 = insertOne(json2);
+
+        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
+
+        when().
+            get(API_URL).
+        then().
+            statusCode(200).
+            body("_embedded", notNullValue()).
+            body(embeddedPath, notNullValue()).
+            body(embeddedPath+".id", hasItems(id0, id1, id2)).
+            body(embeddedPath+".name", hasItems(json0.get("name"), json1.get("name"), json2.get("name"))).
+            body(embeddedPath+".password", hasItems(json0.get("password"), json1.get("password"), json2.get("password"))).
+            body(embeddedPath+"."+EDIT_LINK_PATH, hasItems(editLink(id0), editLink(id1), editLink(id2))).
+
+            
+            body("_links", notNullValue()).
+            body("_links.first", nullValue()).
+
+            body("_links.prev", nullValue()).
+
+            body("_links.self", notNullValue()).
+            body("_links.self.href", equalTo(paginationLink(0, 5))).
+
+            body("_links.next", nullValue()).
+
+            body("_links.last", nullValue()).
+
+            body("_links.create", notNullValue()).
+            body("_links.create.href", equalTo(API_URL)).
+
+
+            body("page", notNullValue()).
+            body("page.size", equalTo(5)).
+            body("page.totalElements", equalTo(3)).
+            body("page.totalPages", equalTo(1)).
+            body("page.number", equalTo(0));
+    }
+
+    @Test
+    public void testFindEmpty() {
+        when().
+            get(API_URL).
+        then().
+            statusCode(200).
+            body("_embedded", nullValue()).
+            
+            body("_links", notNullValue()).
+            body("_links.first", nullValue()).
+
+            body("_links.prev", nullValue()).
+
+            body("_links.self", notNullValue()).
+            body("_links.self.href", equalTo(paginationLink(0, 5))).
+
+            body("_links.next", nullValue()).
+
+            body("_links.last", nullValue()).
+
+            body("_links.create", notNullValue()).
+            body("_links.create.href", equalTo(API_URL)).
+
+
+            body("page", notNullValue()).
+            body("page.size", equalTo(5)).
+            body("page.totalElements", equalTo(0)).
+            body("page.totalPages", equalTo(0)).
+            body("page.number", equalTo(0));
+    }
+
+    @Test 
+    public void testFindSorted() {
+        JSONObject json0 = new JSONObject()
+            .put("name", "Integration Test 0")
+            .put("password", "0000");
+
+        JSONObject json1 = new JSONObject()
+            .put("name", "Integration Test 1")
+            .put("password", "1111");
+
+        JSONObject json2 = new JSONObject()
+            .put("name", "Integration Test 2")
+            .put("password", "2222");
+
+        String id0 = insertOne(json0);
+        String id1 = insertOne(json1);
+        String id2 = insertOne(json2);
+
+        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
+
+        when().
+            get(API_URL + "?sort=name,desc").
+        then().
+            statusCode(200).
+            body("_embedded", notNullValue()).
+            body(embeddedPath, notNullValue()).
+            body(embeddedPath+".id", equalTo(List.of(id2, id1, id0))).
+            body(embeddedPath+".name", equalTo(List.of(json2.get("name"), json1.get("name"), json0.get("name")))).
+            body(embeddedPath+".password", equalTo(List.of(json2.get("password"), json1.get("password"), json0.get("password")))).
+            body(embeddedPath+"."+EDIT_LINK_PATH, equalTo(List.of(editLink(id2), editLink(id1), editLink(id0)))).
+
+            
+            body("_links", notNullValue()).
+            body("_links.first", nullValue()).
+
+            body("_links.prev", nullValue()).
+
+            body("_links.self", notNullValue()).
+            body("_links.self.href", equalTo(paginationSortLink(0, 5, "name,desc"))).
+
+            body("_links.next", nullValue()).
+
+            body("_links.last", nullValue()).
+
+            body("_links.create", notNullValue()).
+            body("_links.create.href", equalTo(API_URL)).
+
+
+            body("page", notNullValue()).
+            body("page.size", equalTo(5)).
+            body("page.totalElements", equalTo(3)).
+            body("page.totalPages", equalTo(1)).
+            body("page.number", equalTo(0));
+
     }
 
     private String insertOne(JSONObject json) {
@@ -465,6 +606,9 @@ public class UserTest {
     private String paginationLink(int page, int size) {
         return API_URL + "?page=" + page + "&size=" + size;
     }
-    
+
+    private String paginationSortLink(int page, int size, String sort) {
+        return paginationLink(page, size) + "&sort=" + sort;
+    }    
 
 }
