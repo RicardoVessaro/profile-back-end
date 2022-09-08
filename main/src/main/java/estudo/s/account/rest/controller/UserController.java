@@ -21,14 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import estudo.s.account.data.entity.User;
-import estudo.s.account.rest.ResourceConstants;
+import estudo.s.account.rest.Constants;
 import estudo.s.account.rest.assembler.UserAssembler;
 import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
 
 
 @RestController
-@RequestMapping(ResourceConstants.USER_BASE_URL)
+@RequestMapping(Constants.USER_BASE_URL)
 public class UserController {
 
     private final UserService service;
