@@ -1,4 +1,4 @@
-package estudo.s.account.resource.assembler;
+package estudo.s.account.rest.assembler;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -11,8 +11,8 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
-import estudo.s.account.resource.controller.UserController;
-import estudo.s.account.resource.dto.UserDTO;
+import estudo.s.account.rest.controller.UserController;
+import estudo.s.account.rest.dto.UserDTO;
 
 @Component
 public class UserAssembler implements RepresentationModelAssembler<UserDTO, EntityModel<UserDTO>>{

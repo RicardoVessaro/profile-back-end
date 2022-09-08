@@ -1,4 +1,4 @@
-package estudo.s.account.resource.controller;
+package estudo.s.account.rest.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,7 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import estudo.s.account.data.entity.User;
-import estudo.s.account.resource.dto.UserDTO;
+import estudo.s.account.rest.controller.UserController;
+import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
 
 @SpringBootTest

@@ -1,4 +1,4 @@
-package estudo.s.account.resource.controller;
+package estudo.s.account.rest.controller;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import estudo.s.account.data.entity.User;
-import estudo.s.account.resource.ResourceConstants;
-import estudo.s.account.resource.assembler.UserAssembler;
-import estudo.s.account.resource.dto.UserDTO;
+import estudo.s.account.rest.ResourceConstants;
+import estudo.s.account.rest.assembler.UserAssembler;
+import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
 
 

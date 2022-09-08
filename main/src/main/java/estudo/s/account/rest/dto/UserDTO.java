@@ -1,4 +1,4 @@
-package estudo.s.account.resource.dto;
+package estudo.s.account.rest.dto;
 
 import java.util.UUID;
 

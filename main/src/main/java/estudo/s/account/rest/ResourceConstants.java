@@ -1,4 +1,4 @@
-package estudo.s.account.resource;
+package estudo.s.account.rest;
 
 public class ResourceConstants {
 

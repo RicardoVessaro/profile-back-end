@@ -1,4 +1,4 @@
-package estudo.s.account.resource.advice;
+package estudo.s.account.rest.advice;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
