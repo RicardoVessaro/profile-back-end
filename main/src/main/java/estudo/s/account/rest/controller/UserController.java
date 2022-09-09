@@ -25,6 +25,7 @@ import estudo.s.account.rest.Constants;
 import estudo.s.account.rest.assembler.UserAssembler;
 import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
+import estudo.s.ipsum.rest.ResponseBuilder;
 
 
 @RestController
@@ -50,7 +51,7 @@ public class UserController {
 
         entity = service.insert(entity);
 
-        return createResponse(entity, HttpStatus.CREATED);
+        return responseBuilder().createResponse(entity, HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -58,7 +59,7 @@ public class UserController {
 
         Page<User> entities = service.findAll(pageable);
 
-        return createResponse(entities);
+        return responseBuilder().createResponse(entities);
     }
 
     @GetMapping("/{id}")
@@ -66,10 +67,10 @@ public class UserController {
         Optional<User> optionalEntity = service.findById(id);
 
         if (optionalEntity.isPresent()) {
-            return createResponse(optionalEntity.get());
+            return responseBuilder().createResponse(optionalEntity.get());
         }
 
-        return noContent();
+        return responseBuilder().noContent();
     }
 
     @PutMapping("/{id}")
@@ -79,42 +80,18 @@ public class UserController {
 
         User entity = service.update(id, entityChanges);
 
-        return createResponse(entity);
+        return responseBuilder().createResponse(entity);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityModel<UserDTO>> delete(@PathVariable UUID id) {
         service.delete(id);
 
-        return noContent();
+        return responseBuilder().noContent();
     }
 
-    private ResponseEntity<EntityModel<UserDTO>> createResponse(User entity) {
-        return createResponse(entity, HttpStatus.OK);
-    }
-
-    private ResponseEntity<EntityModel<UserDTO>> createResponse(User entity, HttpStatus httpStatus) {
-        UserDTO dto = modelMapper.map(entity, UserDTO.class);
-
-        return new ResponseEntity<>(assembler.toModel(dto), httpStatus);
-    }
-
-    private ResponseEntity<PagedModel<EntityModel<UserDTO>>> createResponse(Page<User> entities) {
-        return createResponse(entities, HttpStatus.OK);
-    }
-
-    private ResponseEntity<PagedModel<EntityModel<UserDTO>>> createResponse(Page<User> entities, HttpStatus httpStatus) {
-        Page<UserDTO> dtos = entities.map(entity -> {
-            return modelMapper.map(entity, UserDTO.class);
-        });
-
-        return ResponseEntity
-            .status(httpStatus)
-            .body(assembler.toPagedModel(dtos));
-    }
-
-    private ResponseEntity<EntityModel<UserDTO>> noContent() {
-        return ResponseEntity.noContent().build();
+    private ResponseBuilder<User, UserDTO> responseBuilder() {
+        return new ResponseBuilder<User, UserDTO>(assembler) {};
     }
 
 }

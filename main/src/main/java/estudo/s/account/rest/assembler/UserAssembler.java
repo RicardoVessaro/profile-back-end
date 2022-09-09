@@ -8,14 +8,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
 import estudo.s.account.rest.controller.UserController;
 import estudo.s.account.rest.dto.UserDTO;
+import estudo.s.ipsum.rest.Assembler;
 
 @Component
-public class UserAssembler implements RepresentationModelAssembler<UserDTO, EntityModel<UserDTO>>{
+public class UserAssembler implements Assembler<UserDTO>{
 
 
     @Autowired
@@ -28,6 +28,7 @@ public class UserAssembler implements RepresentationModelAssembler<UserDTO, Enti
         );
     }
 
+    @Override
     public PagedModel<EntityModel<UserDTO>> toPagedModel(Page<UserDTO> dtos) {
             PagedModel<EntityModel<UserDTO>> pagedModel = pagedAssembler.toModel(dtos, this);
 
