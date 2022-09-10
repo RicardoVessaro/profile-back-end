@@ -2,7 +2,9 @@ package estudo.s.account.rest.dto;
 
 import java.util.UUID;
 
-public class UserDTO {
+import estudo.s.ipsum.rest.DTO;
+
+public class UserDTO implements DTO<UUID> {
 
     private UUID id;
     private String name;
@@ -10,6 +12,7 @@ public class UserDTO {
 
     public UserDTO() {}
 
+    @Override
     public UUID getId() {
         return id;
     }

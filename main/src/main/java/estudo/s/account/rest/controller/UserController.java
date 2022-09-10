@@ -25,12 +25,13 @@ import estudo.s.account.rest.Constants;
 import estudo.s.account.rest.assembler.UserAssembler;
 import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
+import estudo.s.ipsum.rest.Controller;
 import estudo.s.ipsum.rest.ResponseBuilder;
 
 
 @RestController
 @RequestMapping(Constants.USER_BASE_URL)
-public class UserController {
+public class UserController implements Controller<UserDTO, UUID> {
 
     private final UserService service;
 
@@ -90,8 +91,8 @@ public class UserController {
         return responseBuilder().noContent();
     }
 
-    private ResponseBuilder<User, UserDTO> responseBuilder() {
-        return new ResponseBuilder<User, UserDTO>(assembler) {};
+    private ResponseBuilder<User, UserDTO, UUID> responseBuilder() {
+        return new ResponseBuilder<User, UserDTO, UUID>(assembler) {};
     }
 
 }

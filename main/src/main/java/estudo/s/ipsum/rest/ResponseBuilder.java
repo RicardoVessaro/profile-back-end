@@ -9,16 +9,16 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.reflect.TypeToken;
 
-public abstract class ResponseBuilder<E, D> {
+public abstract class ResponseBuilder<E, D extends DTO<ID>, ID> {
 
     private ModelMapper modelMapper = new ModelMapper();
 
     private Class<D> dtoClass;
 
-    private Assembler<D> assembler;
+    private Assembler<D, ID> assembler;
 
     @SuppressWarnings("unchecked")
-    public ResponseBuilder(Assembler<D> assembler) {
+    public ResponseBuilder(Assembler<D, ID> assembler) {
 
         this.assembler = assembler;
 
