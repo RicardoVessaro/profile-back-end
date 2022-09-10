@@ -84,6 +84,21 @@ public class UserTest {
     }
 
     @Test
+    public void testRequiredFieldOnInsert() {
+
+        given().
+            contentType(JSON_CONTENT_TYPE).
+            body(new JSONObject().toString()).
+        when().
+            post(API_URL).
+        then().
+            statusCode(400).
+            body("httpStatus", equalTo("BAD_REQUEST")).
+            body("httpStatusCode", equalTo(400)).
+            body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
+    }
+
+    @Test
     public void testFindById() {
         JSONObject json = new JSONObject()
             .put("name", "Integration Test")
@@ -234,6 +249,29 @@ public class UserTest {
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")));
+    }
+
+    @Test
+    public void testRequiredFieldOnUpdate() {
+        JSONObject json = new JSONObject()
+            .put("name", "Integration Test")
+            .put("password", "0000");
+
+        String id = insertOne(json);
+
+        JSONObject putJson = new JSONObject()
+            .put("id", id);
+            
+        given().
+            contentType(JSON_CONTENT_TYPE).
+            body(putJson.toString()).
+        when().
+            put(editLink(id)).
+        then().
+            statusCode(400).
+            body("httpStatus", equalTo("BAD_REQUEST")).
+            body("httpStatusCode", equalTo(400)).
+            body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
     }
 
     @Test

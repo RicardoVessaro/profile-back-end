@@ -156,4 +156,35 @@ public class UserServiceImplTest {
         assertThat(actual.getPassword()).isEqualTo(expected.getPassword());
     }
 
+    @Test
+    public void testRequiredFieldsOnInsert() {
+
+        User entity = new User();
+
+        IpsumException ipsumException = assertThrows(IpsumException.class, () -> {
+            service.insert(entity);
+        });
+
+        String expectedMessage = "The following fields are required for User: \nName\nPassword";        
+
+        assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);
+        assertThat(ipsumException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void testRequiredFieldsOnUpdate() {
+
+        User entityChanges = new User();
+        entityChanges.setId(entity.getId());
+
+        IpsumException ipsumException = assertThrows(IpsumException.class, () -> {
+            service.update(entity.getId(), entityChanges);
+        });
+
+        String expectedMessage = "The following fields are required for User: \nName\nPassword";        
+
+        assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);
+        assertThat(ipsumException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
 }

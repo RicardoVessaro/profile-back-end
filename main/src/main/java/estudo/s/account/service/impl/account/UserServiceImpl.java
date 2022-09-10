@@ -1,5 +1,6 @@
 package estudo.s.account.service.impl.account;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +16,8 @@ import estudo.s.account.data.entity.User;
 import estudo.s.account.data.respository.UserRepository;
 import estudo.s.account.service.UserService;
 import estudo.s.ipsum.exception.IpsumException;
+import estudo.s.ipsum.service.RequiredField;
+import estudo.s.ipsum.service.RequiredFieldValidator;
 
 import static estudo.s.ipsum.exception.ExceptionMessage.*;
 
@@ -33,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User insert(User entity) {
+
+        getRequiredFieldValidator(entity).validate();
+
         return repository.save(entity);
     }
 
@@ -57,6 +63,8 @@ public class UserServiceImpl implements UserService {
         }
 
         User entity = findByIdOrElseThrow(id);
+        
+        getRequiredFieldValidator(entityChanges).validate();
 
         modelMapper.map(entityChanges, entity);
 
@@ -76,5 +84,12 @@ public class UserServiceImpl implements UserService {
         User entity = findById(id)
                 .orElseThrow(() -> IpsumException.notFound(COULD_NOT_FOUND_ENTITY_WITH_ID, id));
         return entity;
+    }
+
+    private RequiredFieldValidator getRequiredFieldValidator(User entity) {
+        return new RequiredFieldValidator(entity, "User", List.of(
+            new RequiredField("getName", "Name"),
+            new RequiredField("getPassword", "Password")
+        ));
     }
 }
