@@ -187,7 +187,7 @@ public class UserTest {
             .put("name", "update test")
             .put("password", "1111");
 
-        String expectedMessage = "ID '"+ id +"' is different of entity id '"+ randomUUID +"' ";
+        String expectedMessage = "id '"+ id +"' is different of entity id '"+ randomUUID +"'";
 
         given().
             contentType(JSON_CONTENT_TYPE).

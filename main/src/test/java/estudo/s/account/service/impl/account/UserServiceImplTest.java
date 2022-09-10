@@ -101,9 +101,9 @@ public class UserServiceImplTest {
         });
 
         String expectedMessage =  new StringBuilder()
-            .append("ID '" + givenId +"' ")
+            .append("id '" + givenId +"' ")
             .append("is different of entity ")
-            .append("id '" + entity.getId() + "' ")
+            .append("id '" + entity.getId() + "'")
             .toString();
 
         assertThat(ipsumException.getMessage()).isEqualTo(expectedMessage);

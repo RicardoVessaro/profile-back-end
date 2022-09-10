@@ -6,14 +6,14 @@ public class IpsumException extends RuntimeException {
 
     private final HttpStatus httpStatus;
 
-    public IpsumException(String message, HttpStatus httpStatus) {
-        super(message);
+    public IpsumException(String message, HttpStatus httpStatus, Object... args) {
+        super(String.format(message, args));
 
         this.httpStatus = httpStatus;
     }
 
-    public IpsumException(String message) {
-        super(message);
+    public IpsumException(String message, Object... args) {
+        super(String.format(message, args));
 
         this.httpStatus = HttpStatus.BAD_REQUEST;
     }
@@ -22,7 +22,7 @@ public class IpsumException extends RuntimeException {
         return httpStatus;
     }
 
-    public static IpsumException notFound(String message) {
-        return new IpsumException(message, HttpStatus.NOT_FOUND);
+    public static IpsumException notFound(String message, Object... args) {
+        return new IpsumException(message, HttpStatus.NOT_FOUND, args);
     }
 }

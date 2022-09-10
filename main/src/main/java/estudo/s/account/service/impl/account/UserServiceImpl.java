@@ -16,6 +16,8 @@ import estudo.s.account.data.respository.UserRepository;
 import estudo.s.account.service.UserService;
 import estudo.s.ipsum.exception.IpsumException;
 
+import static estudo.s.ipsum.exception.ExceptionMessage.*;
+
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
@@ -51,12 +53,7 @@ public class UserServiceImpl implements UserService {
             entityChanges.setId(id);
 
         } else if (!entityChanges.getId().equals(id)) {
-            String message = new StringBuilder()
-                    .append("ID '" + id +"' ")
-                    .append("is different of entity ")
-                    .append("id '" + entityChanges.getId() + "' ")
-                    .toString();
-            throw new IpsumException(message);
+            throw new IpsumException(PATH_ID_DIFFERENT_ENTITY_ID, id, entityChanges.getId());
         }
 
         User entity = findByIdOrElseThrow(id);
@@ -77,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
     private User findByIdOrElseThrow(UUID id) {
         User entity = findById(id)
-                .orElseThrow(() -> IpsumException.notFound("Could not find Entity with id '" + id + "'"));
+                .orElseThrow(() -> IpsumException.notFound(COULD_NOT_FOUND_ENTITY_WITH_ID, id));
         return entity;
     }
 }
