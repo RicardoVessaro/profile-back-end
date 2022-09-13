@@ -1,4 +1,4 @@
-package estudo.s.account.data.entity;
+package estudo.s.account.data.model;
 
 import java.util.UUID;
 

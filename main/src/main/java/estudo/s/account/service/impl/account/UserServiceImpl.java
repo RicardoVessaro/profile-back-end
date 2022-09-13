@@ -7,7 +7,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import estudo.s.account.data.entity.User;
+import estudo.s.account.data.model.User;
 import estudo.s.account.data.respository.UserRepository;
 import estudo.s.account.service.UserService;
 import estudo.s.ipsum.service.IpsumService;

@@ -18,7 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
-import estudo.s.account.data.entity.User;
+import estudo.s.account.data.model.User;
 import estudo.s.account.service.impl.account.UserServiceImpl;
 import estudo.s.ipsum.exception.IpsumException;
 

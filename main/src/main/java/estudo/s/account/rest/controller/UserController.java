@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import estudo.s.account.data.entity.User;
+import estudo.s.account.data.model.User;
 import estudo.s.account.rest.Constants;
 import estudo.s.account.rest.assembler.UserAssembler;
 import estudo.s.account.rest.dto.UserDTO;
