@@ -30,6 +30,6 @@ public abstract class Assembler<D extends DTO<ID>, ID> implements Representation
         );
     }
 
-    public abstract Class<? extends Controller<D, ID>> controllerClass();
+    public abstract Class<? extends CRUDController<D, ID>> controllerClass();
     
 }

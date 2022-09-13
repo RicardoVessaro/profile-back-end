@@ -1,17 +1,19 @@
 package estudo.s.account.data.entity;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.domain.Persistable;
+import java.util.UUID;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import estudo.s.ipsum.data.Model;
 
 @Entity
 @Table(name = "Users")
-public class User implements Persistable<UUID> {
+public class User implements Model<UUID> {
 
     @Id
     @GenericGenerator(name = "USER_GENERATOR", strategy = "uuid2")
@@ -35,6 +37,7 @@ public class User implements Persistable<UUID> {
         return id;
     }
 
+    @Override
     public void setId(UUID id) {
         this.id = id;
     }

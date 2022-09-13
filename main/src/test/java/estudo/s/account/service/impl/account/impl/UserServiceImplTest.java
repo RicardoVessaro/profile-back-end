@@ -1,4 +1,4 @@
-package estudo.s.account.service.impl.account;
+package estudo.s.account.service.impl.account.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import estudo.s.account.data.entity.User;
-import estudo.s.account.service.UserService;
+import estudo.s.account.service.impl.account.UserServiceImpl;
 import estudo.s.ipsum.exception.IpsumException;
 
 @SpringBootTest
@@ -27,7 +27,7 @@ import estudo.s.ipsum.exception.IpsumException;
 public class UserServiceImplTest {
 
     @Autowired
-    private UserService service;
+    private UserServiceImpl service;
     
     private User entity;
 
@@ -133,6 +133,8 @@ public class UserServiceImplTest {
         Optional<User> optionalEntity = service.findById(entity.getId());
 
         assertThat(optionalEntity.isEmpty()).isTrue();
+
+        assertThat(service.isValidateDeleteInvoked()).isTrue();
     }
 
     @Test
