@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import estudo.s.ipsum.data.Model;
 import estudo.s.ipsum.exception.IpsumException;
 
-public abstract class IpsumService<E extends Model<ID>, ID> implements CRUDService<E, ID> {
+public abstract class CRUDServiceImpl<E extends Model<ID>, ID> implements CRUDService<E, ID> {
 
     @Autowired
     protected ModelMapper modelMapper;
@@ -23,7 +23,7 @@ public abstract class IpsumService<E extends Model<ID>, ID> implements CRUDServi
 
     private final JpaRepository<E, ID> repository;
 
-    public IpsumService(JpaRepository<E, ID> repository) {
+    public CRUDServiceImpl(JpaRepository<E, ID> repository) {
         this.repository = repository;
     }
     

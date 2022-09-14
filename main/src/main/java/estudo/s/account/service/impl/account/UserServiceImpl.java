@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 import estudo.s.account.data.model.User;
 import estudo.s.account.data.respository.UserRepository;
 import estudo.s.account.service.UserService;
-import estudo.s.ipsum.service.IpsumService;
+import estudo.s.ipsum.service.CRUDServiceImpl;
 import estudo.s.ipsum.service.RequiredField;
 import estudo.s.ipsum.service.RequiredFieldValidator;
 
 @Service
 @Transactional
-public class UserServiceImpl extends IpsumService<User, UUID> implements UserService {
+public class UserServiceImpl extends CRUDServiceImpl<User, UUID> implements UserService {
 
     public UserServiceImpl(UserRepository repository) {
         super(repository);

@@ -10,13 +10,13 @@ import estudo.s.account.rest.Constants;
 import estudo.s.account.rest.assembler.UserAssembler;
 import estudo.s.account.rest.dto.UserDTO;
 import estudo.s.account.service.UserService;
-import estudo.s.ipsum.rest.Controller;
+import estudo.s.ipsum.rest.CRUDControllerImpl;
 import estudo.s.ipsum.rest.ResponseBuilder;
 
 
 @RestController
 @RequestMapping(Constants.USER_BASE_URL)
-public class UserController extends Controller<User, UserDTO, UUID> {
+public class UserController extends CRUDControllerImpl<User, UserDTO, UUID> {
 
     public UserController(UserService service, UserAssembler assembler) {
         super(service, assembler);

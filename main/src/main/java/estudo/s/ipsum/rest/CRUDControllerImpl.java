@@ -15,7 +15,7 @@ import com.google.common.reflect.TypeToken;
 import estudo.s.ipsum.data.Model;
 import estudo.s.ipsum.service.CRUDService;
 
-public abstract class Controller<E extends Model<ID>, D extends DTO<ID>, ID> implements CRUDController<D, ID> {
+public abstract class CRUDControllerImpl<E extends Model<ID>, D extends DTO<ID>, ID> implements CRUDController<D, ID> {
 
     private CRUDService<E, ID> service;
 
@@ -27,7 +27,7 @@ public abstract class Controller<E extends Model<ID>, D extends DTO<ID>, ID> imp
     private ModelMapper modelMapper;
     
     @SuppressWarnings("unchecked")
-    public Controller(CRUDService<E, ID> service, Assembler<D, ID> assembler) {
+    public CRUDControllerImpl(CRUDService<E, ID> service, Assembler<D, ID> assembler) {
         this.service = service;
         this.assembler = assembler;
         
