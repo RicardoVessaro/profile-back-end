@@ -13,7 +13,7 @@ import estudo.s.ipsum.data.Model;
 
 @Entity
 @Table(name = "Users")
-public class User implements Model<UUID> {
+public class User extends Model<UUID> {
 
     @Id
     @GenericGenerator(name = "USER_GENERATOR", strategy = "uuid2")
@@ -63,17 +63,4 @@ public class User implements Model<UUID> {
         return id == null;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        User user = (User) object;
-
-        if (this.getId() == null && user.getId() == null ) {
-            return true;
-        
-        } else if(this.getId() != null && user.getId() == null) {
-            return false;
-        }
-
-        return this.getId().equals(user.getId());
-    }
 }
