@@ -10,6 +10,7 @@ import static io.restassured.RestAssured.*;
 // import static io.restassured.module.jsv.JsonSchemaValidator.*;
 // import static io.restassured.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.Matchers.*;
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +20,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class UserTest {
 
-    private static final String BASE_URL = "http://localhost:8080/account/api/v1";
+    private static final String BASE_URL = "http://localhost:8080";
 
-    private static final String API_URL = BASE_URL + "/users";
+    private static final String REST_URL = "/account/api/v1";
+
+    private static final String API_URL = BASE_URL + REST_URL + "/users";
 
     private static final String JSON_CONTENT_TYPE = "application/json";
 
@@ -41,7 +44,7 @@ public class UserTest {
         when().
             get(API_URL).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", nullValue());
 
         deleteLinks = new ArrayList<>();
@@ -61,7 +64,7 @@ public class UserTest {
             when().
                 post(API_URL).
             then().
-                statusCode(201).
+                statusCode(CREATED.code).
                 body("id", notNullValue()).
                 body("name", equalTo(json.get("name"))).
                 body("password", equalTo(json.get("password"))).
@@ -75,7 +78,7 @@ public class UserTest {
         when().
             get(responseEditLink)
         .then().
-            statusCode(200).
+            statusCode(OK.code).
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")));
@@ -92,9 +95,9 @@ public class UserTest {
         when().
             post(API_URL).
         then().
-            statusCode(400).
-            body("httpStatus", equalTo("BAD_REQUEST")).
-            body("httpStatusCode", equalTo(400)).
+            statusCode(BAD_REQUEST.code).
+            body("httpStatus", equalTo(BAD_REQUEST.description)).
+            body("httpStatusCode", equalTo(BAD_REQUEST.code)).
             body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
     }
 
@@ -110,7 +113,7 @@ public class UserTest {
             when().
                 get(editLink(id)).
             then().
-                statusCode(200).
+                statusCode(OK.code).
                 body("id", equalTo(id)).
                 body("name", equalTo(json.get("name"))).
                 body("password", equalTo(json.get("password"))).
@@ -127,7 +130,7 @@ public class UserTest {
         when().
             get(editLink(id)).
         then().
-            statusCode(204);
+            statusCode(NO_CONTENT.code);
     }
 
     @Test 
@@ -149,7 +152,7 @@ public class UserTest {
         when().
             put(editLink(id)).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")))
@@ -160,7 +163,7 @@ public class UserTest {
         when().
             get(responseEditLink)
         .then().
-            statusCode(200).
+            statusCode(OK.code).
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")));
@@ -181,9 +184,9 @@ public class UserTest {
         when().
             put(editLink(id)).
         then().
-            statusCode(404).
-            body("httpStatus", equalTo("NOT_FOUND")).
-            body("httpStatusCode", equalTo(404)).
+            statusCode(NOT_FOUND.code).
+            body("httpStatus", equalTo(NOT_FOUND.description)).
+            body("httpStatusCode", equalTo(NOT_FOUND.code)).
             body("message", equalTo("Could not find Entity with id '" + id + "'"));
     }
 
@@ -210,9 +213,9 @@ public class UserTest {
         when().
             put(editLink(id)).
         then().
-            statusCode(400).
-            body("httpStatus", equalTo("BAD_REQUEST")).
-            body("httpStatusCode", equalTo(400)).
+            statusCode(BAD_REQUEST.code).
+            body("httpStatus", equalTo(BAD_REQUEST.description)).
+            body("httpStatusCode", equalTo(BAD_REQUEST.code)).
             body("message", equalTo(expectedMessage));
     }
 
@@ -234,7 +237,7 @@ public class UserTest {
         when().
             put(editLink(id)).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")))
@@ -245,7 +248,7 @@ public class UserTest {
         when().
             get(responseEditLink)
         .then().
-            statusCode(200).
+            statusCode(OK.code).
             body("id", equalTo(id)).
             body("name", equalTo(json.get("name"))).
             body("password", equalTo(json.get("password")));
@@ -268,9 +271,9 @@ public class UserTest {
         when().
             put(editLink(id)).
         then().
-            statusCode(400).
-            body("httpStatus", equalTo("BAD_REQUEST")).
-            body("httpStatusCode", equalTo(400)).
+            statusCode(BAD_REQUEST.code).
+            body("httpStatus", equalTo(BAD_REQUEST.description)).
+            body("httpStatusCode", equalTo(BAD_REQUEST.code)).
             body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
     }
 
@@ -285,7 +288,7 @@ public class UserTest {
         when().
             delete(editLink(id)).
         then().
-            statusCode(204);
+            statusCode(NO_CONTENT.code);
     }
 
     @Test
@@ -295,9 +298,9 @@ public class UserTest {
         when().
             delete(editLink(id)).
         then().
-            statusCode(404).
-            body("httpStatus", equalTo("NOT_FOUND")).
-            body("httpStatusCode", equalTo(404)).
+            statusCode(NOT_FOUND.code).
+            body("httpStatus", equalTo(NOT_FOUND.description)).
+            body("httpStatusCode", equalTo(NOT_FOUND.code)).
             body("message", equalTo("Could not find Entity with id '" + id + "'"));   
     }
 
@@ -324,7 +327,7 @@ public class UserTest {
         when().
             get(paginationLink(0, 1)).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", notNullValue()).
             body(embeddedPath, notNullValue()).
             body(embeddedPath+".id", hasItem(id0)).
@@ -382,7 +385,7 @@ public class UserTest {
         when().
             get(paginationLink(1, 1)).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", notNullValue()).
             body(embeddedPath, notNullValue()).
             body(embeddedPath+".id", hasItem(id1)).
@@ -441,7 +444,7 @@ public class UserTest {
         when().
             get(paginationLink(2, 1)).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", notNullValue()).
             body(embeddedPath, notNullValue()).
             body(embeddedPath+".id", hasItem(id2)).
@@ -500,7 +503,7 @@ public class UserTest {
         when().
             get(API_URL).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", notNullValue()).
             body(embeddedPath, notNullValue()).
             body(embeddedPath+".id", hasItems(id0, id1, id2)).
@@ -537,7 +540,7 @@ public class UserTest {
         when().
             get(API_URL).
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", nullValue()).
             
             body("_links", notNullValue()).
@@ -586,7 +589,7 @@ public class UserTest {
         when().
             get(API_URL + "?sort=name,desc").
         then().
-            statusCode(200).
+            statusCode(OK.code).
             body("_embedded", notNullValue()).
             body(embeddedPath, notNullValue()).
             body(embeddedPath+".id", equalTo(List.of(id2, id1, id0))).
