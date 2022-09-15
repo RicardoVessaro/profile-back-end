@@ -106,7 +106,7 @@ public abstract class CRUDServiceImpl<E extends Model<ID>, ID> implements CRUDSe
         getRequiredFieldValidator(entity).validate();
     }
 
-    public boolean isValidateDeleteInvoked() {
+    protected boolean isValidateDeleteInvoked() {
         return validateDeleteInvoked;
     }
     
