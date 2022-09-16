@@ -4,6 +4,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import estudo.s.ipsumintegrationtest.constants.ExpectedMessage;
+import estudo.s.ipsumintegrationtest.constants.Message;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.*;
@@ -98,7 +100,7 @@ public class UserTest {
             statusCode(BAD_REQUEST.code).
             body("httpStatus", equalTo(BAD_REQUEST.description)).
             body("httpStatusCode", equalTo(BAD_REQUEST.code)).
-            body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
+            body("message", equalTo(new ExpectedMessage(Message.REQUIRED_FIELDS, "User", "\nName\nPassword").toString()));    
     }
 
     @Test
@@ -187,7 +189,7 @@ public class UserTest {
             statusCode(NOT_FOUND.code).
             body("httpStatus", equalTo(NOT_FOUND.description)).
             body("httpStatusCode", equalTo(NOT_FOUND.code)).
-            body("message", equalTo("Could not find Entity with id '" + id + "'"));
+            body("message", equalTo(new ExpectedMessage(Message.ENTITY_NOT_FOUND, id).toString()));
     }
 
     @Test
@@ -205,8 +207,6 @@ public class UserTest {
             .put("name", "update test")
             .put("password", "1111");
 
-        String expectedMessage = "id '"+ id +"' is different of entity id '"+ randomUUID +"'";
-
         given().
             contentType(JSON_CONTENT_TYPE).
             body(json.toString()).
@@ -216,7 +216,7 @@ public class UserTest {
             statusCode(BAD_REQUEST.code).
             body("httpStatus", equalTo(BAD_REQUEST.description)).
             body("httpStatusCode", equalTo(BAD_REQUEST.code)).
-            body("message", equalTo(expectedMessage));
+            body("message", equalTo(new ExpectedMessage(Message.PATH_ID_DIFFERENT_ENTITY_ID, id, randomUUID).toString()));
     }
 
     @Test
@@ -274,7 +274,7 @@ public class UserTest {
             statusCode(BAD_REQUEST.code).
             body("httpStatus", equalTo(BAD_REQUEST.description)).
             body("httpStatusCode", equalTo(BAD_REQUEST.code)).
-            body("message", equalTo("The following fields are required for User: \nName\nPassword"));    
+            body("message", equalTo(new ExpectedMessage(Message.REQUIRED_FIELDS, "User", "\nName\nPassword").toString()));    
     }
 
     @Test
@@ -301,7 +301,7 @@ public class UserTest {
             statusCode(NOT_FOUND.code).
             body("httpStatus", equalTo(NOT_FOUND.description)).
             body("httpStatusCode", equalTo(NOT_FOUND.code)).
-            body("message", equalTo("Could not find Entity with id '" + id + "'"));   
+            body("message", equalTo(new ExpectedMessage(Message.ENTITY_NOT_FOUND, id).toString()));   
     }
 
     @Test
