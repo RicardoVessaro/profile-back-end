@@ -1,12 +1,18 @@
 package estudo.s.integrationtest.account.user;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import estudo.s.ipsumintegrationtest.assertion.IntegrationTest;
+import estudo.s.ipsumintegrationtest.assertion.pagination.AssertPagination;
+import estudo.s.ipsumintegrationtest.assertion.pagination.Links;
+import estudo.s.ipsumintegrationtest.assertion.pagination.Page;
 import estudo.s.ipsumintegrationtest.constants.ExpectedMessage;
 import estudo.s.ipsumintegrationtest.constants.Message;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
 import static io.restassured.RestAssured.*;
 // import static io.restassured.module.jsv.JsonSchemaValidator.*;
@@ -14,13 +20,19 @@ import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 import static estudo.s.ipsumintegrationtest.constants.HttpStatus.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class UserTest {
+public class UserTest extends IntegrationTest {
 
     private static final String BASE_URL = "http://localhost:8080";
 
@@ -51,25 +63,22 @@ public class UserTest {
 
         deleteLinks = new ArrayList<>();
     }
-    
+
     @Test
     public void testInsert() {
-
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
         Response response = 
-            given().
-                contentType(JSON_CONTENT_TYPE).
-                body(json.toString()).
-            when().
-                post(API_URL).
-            then().
-                statusCode(CREATED.code).
-                body("id", notNullValue()).
-                body("name", equalTo(json.get("name"))).
-                body("password", equalTo(json.get("password"))).
+            assertJsonFields(json, 
+                given().
+                    contentType(JSON_CONTENT_TYPE).
+                    body(json.toString()).
+                when().
+                    post(API_URL).
+                then().
+                    statusCode(CREATED.code).
+                    body("id", notNullValue())
+            ).
             extract().response();
 
         String id = response.path("id").toString();
@@ -77,13 +86,13 @@ public class UserTest {
 
         assertThat(responseEditLink).isEqualTo(editLink(id));
 
-        when().
-            get(responseEditLink)
-        .then().
-            statusCode(OK.code).
-            body("id", equalTo(id)).
-            body("name", equalTo(json.get("name"))).
-            body("password", equalTo(json.get("password")));
+        assertJsonFields(json,
+            when().
+                get(responseEditLink)
+            .then().
+                statusCode(OK.code).
+                body("id", equalTo(id))
+        );
 
         deleteLinks.add(responseEditLink);
     }
@@ -105,20 +114,18 @@ public class UserTest {
 
     @Test
     public void testFindById() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
         String responseEditLink = 
-            when().
-                get(editLink(id)).
-            then().
+            assertJsonFields(json, 
+                when().
+                    get(editLink(id)).
+                then().
                 statusCode(OK.code).
-                body("id", equalTo(id)).
-                body("name", equalTo(json.get("name"))).
-                body("password", equalTo(json.get("password"))).
+                body("id", equalTo(id))
+            ).
             extract().path(EDIT_LINK_PATH).toString();
 
         assertThat(responseEditLink).isEqualTo(editLink(id));
@@ -137,48 +144,42 @@ public class UserTest {
 
     @Test 
     public void testUpdate() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
-        json = new JSONObject()
-            .put("id", id)
-            .put("name", "update test")
-            .put("password", "1111");
+        json = editBody()
+            .put("id", id);
 
-        String responseEditLink = given().
-            contentType(JSON_CONTENT_TYPE).
-            body(json.toString()).
-        when().
-            put(editLink(id)).
-        then().
-            statusCode(OK.code).
-            body("id", equalTo(id)).
-            body("name", equalTo(json.get("name"))).
-            body("password", equalTo(json.get("password")))
-        .extract().path(EDIT_LINK_PATH).toString();
+        String responseEditLink = 
+            assertJsonFields(json,
+                given().
+                    contentType(JSON_CONTENT_TYPE).
+                    body(json.toString()).
+                when().
+                    put(editLink(id)).
+                then().
+                    statusCode(OK.code).
+                    body("id", equalTo(id))
+            ).
+        extract().path(EDIT_LINK_PATH).toString();
 
         assertThat(responseEditLink).isEqualTo(editLink(id));
 
-        when().
-            get(responseEditLink)
-        .then().
-            statusCode(OK.code).
-            body("id", equalTo(id)).
-            body("name", equalTo(json.get("name"))).
-            body("password", equalTo(json.get("password")));
+        assertJsonFields(json,
+            when().
+                get(responseEditLink)
+            .then().
+                statusCode(OK.code).
+                body("id", equalTo(id))
+        );
     }
 
     @Test 
     public void testUpdateWhenNotFound() {
         String id = UUID.randomUUID().toString();
 
-        JSONObject json = new JSONObject()
-            .put("id", id)
-            .put("name", "update test")
-            .put("password", "1111");
+        JSONObject json = editBody().put("id", id);
 
         given().
             contentType(JSON_CONTENT_TYPE).
@@ -194,18 +195,13 @@ public class UserTest {
 
     @Test
     public void testUpdateWhenIdFromBodyDiffersFromPathId() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
         UUID randomUUID = UUID.randomUUID();
 
-        json = new JSONObject()
-            .put("id", randomUUID)
-            .put("name", "update test")
-            .put("password", "1111");
+        json = editBody().put("id", randomUUID);
 
         given().
             contentType(JSON_CONTENT_TYPE).
@@ -221,27 +217,26 @@ public class UserTest {
 
     @Test
     public void testUpdateWhenIdFromBodyIsNull() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
-        json = new JSONObject()
-            .put("name", "update test")
-            .put("password", "1111");
+        UUID emptyId = null;
 
-        String responseEditLink = given().
-            contentType(JSON_CONTENT_TYPE).
-            body(json.toString()).
-        when().
-            put(editLink(id)).
-        then().
-            statusCode(OK.code).
-            body("id", equalTo(id)).
-            body("name", equalTo(json.get("name"))).
-            body("password", equalTo(json.get("password")))
-        .extract().path(EDIT_LINK_PATH).toString();
+        json = editBody().put("id", emptyId);
+
+        String responseEditLink = 
+            assertJsonFields(json,
+                given().
+                    contentType(JSON_CONTENT_TYPE).
+                    body(json.toString()).
+                when().
+                    put(editLink(id)).
+                then().
+                    statusCode(OK.code).
+                    body("id", equalTo(id))
+            ).
+        extract().path(EDIT_LINK_PATH).toString();
 
         assertThat(responseEditLink).isEqualTo(editLink(id));
 
@@ -256,11 +251,9 @@ public class UserTest {
 
     @Test
     public void testRequiredFieldOnUpdate() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
         JSONObject putJson = new JSONObject()
             .put("id", id);
@@ -279,11 +272,9 @@ public class UserTest {
 
     @Test
     public void testDelete() {
-        JSONObject json = new JSONObject()
-            .put("name", "Integration Test")
-            .put("password", "0000");
+        JSONObject json = newBody();
 
-        String id = insertOne(json);
+        String id = insert(json);
 
         when().
             delete(editLink(id)).
@@ -306,323 +297,363 @@ public class UserTest {
 
     @Test
     public void testFindFirstPage() {
-        JSONObject json0 = new JSONObject()
-            .put("name", "Integration Test 0")
-            .put("password", "0000");
+        List<JSONObject> jsons = getListBody();
 
-        JSONObject json1 = new JSONObject()
-            .put("name", "Integration Test 1")
-            .put("password", "1111");
+        final int MAX_SIZE = jsons.size();
+        
+        final int LAST = MAX_SIZE - 1;
 
-        JSONObject json2 = new JSONObject()
-            .put("name", "Integration Test 2")
-            .put("password", "2222");
+        boolean isFirst = true;
+        JSONObject firstJson = null;
 
-        String id0 = insertOne(json0);
-        insertOne(json1);
-        insertOne(json2);
+        for(JSONObject json: jsons) {
+            String id = insert(json);
+            json.put("id", id);
 
-        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
+            if(isFirst) {
+                firstJson = json;
+            }
 
-        when().
-            get(paginationLink(0, 1)).
-        then().
-            statusCode(OK.code).
-            body("_embedded", notNullValue()).
-            body(embeddedPath, notNullValue()).
-            body(embeddedPath+".id", hasItem(id0)).
-            body(embeddedPath+".name", hasItem(json0.get("name"))).
-            body(embeddedPath+".password", hasItem(json0.get("password"))).
-            body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id0))).
+            isFirst = false;
+        }
 
-            
-            body("_links", notNullValue()).
-            body("_links.first", notNullValue()).
-            body("_links.first.href", equalTo(paginationLink(0, 1))).
+        AssertPagination assertPagination = new AssertPagination(
+            new Page().
+                withSize(1).
+                withTotalElements(MAX_SIZE).
+                withTotalPages(MAX_SIZE).
+                withNumber(0),
+                
+            new Links().
+                withFirst(paginationLink(0, 1)).
+                withSelf(paginationLink(0, 1)).
+                withNext(paginationLink(1, 1)).
+                withLast(paginationLink(LAST, 1)).
+                withCreate(API_URL)
+        );
 
-            body("_links.prev", nullValue()).
-
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationLink(0, 1))).
-
-            body("_links.next", notNullValue()).
-            body("_links.next.href", equalTo(paginationLink(1, 1))).
-
-            body("_links.last", notNullValue()).
-            body("_links.last.href", equalTo(paginationLink(2, 1))).
-
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
-
-
-            body("page", notNullValue()).
-            body("page.size", equalTo(1)).
-            body("page.totalElements", equalTo(3)).
-            body("page.totalPages", equalTo(3)).
-            body("page.number", equalTo(0));
+        assertEmbeddedJsonFields(firstJson, 
+            assertPagination.validate(
+                when().
+                    get(paginationLink(0, 1)).
+                then().
+                    statusCode(OK.code)
+            ));
     }
+
+    
 
     @Test
     public void testFindMidPage() {
-        JSONObject json0 = new JSONObject()
-            .put("name", "Integration Test 0")
-            .put("password", "0000");
+        List<JSONObject> jsons = getListBody();
 
-        JSONObject json1 = new JSONObject()
-            .put("name", "Integration Test 1")
-            .put("password", "1111");
+        final int SECOND = 1;
+        final int SIZE = jsons.size();
+        final int LAST = SIZE - 1;
+    
+        JSONObject secondJson = null;
 
-        JSONObject json2 = new JSONObject()
-            .put("name", "Integration Test 2")
-            .put("password", "2222");
+        int index = 0;
+        for(JSONObject json: jsons) {
 
-        insertOne(json0);
-        String id1 = insertOne(json1);
-        insertOne(json2);
+            String id = insert(json);
+            json.put("id", id);
 
-        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
+            if(index == SECOND) {
+                secondJson = json;
+            }
 
-        when().
-            get(paginationLink(1, 1)).
-        then().
-            statusCode(OK.code).
-            body("_embedded", notNullValue()).
-            body(embeddedPath, notNullValue()).
-            body(embeddedPath+".id", hasItem(id1)).
-            body(embeddedPath+".name", hasItem(json1.get("name"))).
-            body(embeddedPath+".password", hasItem(json1.get("password"))).
-            body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id1))).
+            index++;
+        }
 
-            
-            body("_links", notNullValue()).
-            body("_links.first", notNullValue()).
-            body("_links.first.href", equalTo(paginationLink(0, 1))).
+        AssertPagination assertPagination = new AssertPagination(
+            new Page()
+                .withSize(1)
+                .withTotalElements(SIZE)
+                .withTotalPages(SIZE)
+                .withNumber(1),
 
-            body("_links.prev", notNullValue()).
-            body("_links.prev.href", equalTo(paginationLink(0, 1))).
+            new Links()
+                .withFirst(paginationLink(0, 1))
+                .withPrev(paginationLink(0, 1))
+                .withSelf(paginationLink(1, 1))
+                .withNext(paginationLink(2, 1))
+                .withLast(paginationLink(LAST, 1))
+                .withCreate(API_URL));
 
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationLink(1, 1))).
-
-            body("_links.next", notNullValue()).
-            body("_links.next.href", equalTo(paginationLink(2, 1))).
-
-            body("_links.last", notNullValue()).
-            body("_links.last.href", equalTo(paginationLink(2, 1))).
-
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
-
-
-            body("page", notNullValue()).
-            body("page.size", equalTo(1)).
-            body("page.totalElements", equalTo(3)).
-            body("page.totalPages", equalTo(3)).
-            body("page.number", equalTo(1));
+        assertEmbeddedJsonFields(secondJson, 
+            assertPagination.validate(
+                when().
+                    get(paginationLink(SECOND, 1)).
+                then().
+                    statusCode(OK.code)
+            ));
     }
 
     @Test
     public void testFindLastPage() {
-        JSONObject json0 = new JSONObject()
-            .put("name", "Integration Test 0")
-            .put("password", "0000");
+        List<JSONObject> jsons = getListBody();
 
-        JSONObject json1 = new JSONObject()
-            .put("name", "Integration Test 1")
-            .put("password", "1111");
+        final int SIZE = jsons.size();
+        
+        final int LAST = SIZE - 1;
 
-        JSONObject json2 = new JSONObject()
-            .put("name", "Integration Test 2")
-            .put("password", "2222");
+        final int SECOND_TO_LAST = LAST - 1;
 
-        insertOne(json0);
-        insertOne(json1);
-        String id2 = insertOne(json2);
+        JSONObject lastJson = null;
 
-        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
+        int index = 0;
+        for(JSONObject json: jsons) {
 
-        when().
-            get(paginationLink(2, 1)).
-        then().
-            statusCode(OK.code).
-            body("_embedded", notNullValue()).
-            body(embeddedPath, notNullValue()).
-            body(embeddedPath+".id", hasItem(id2)).
-            body(embeddedPath+".name", hasItem(json2.get("name"))).
-            body(embeddedPath+".password", hasItem(json2.get("password"))).
-            body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id2))).
+            String id = insert(json);
+            json.put("id", id);
 
+            if(index == LAST) {
+                lastJson = json;
+            }
+
+            index++;
+        }
+
+        AssertPagination assertPagination = new AssertPagination(
+            new Page()
+                .withSize(1)
+                .withTotalElements(SIZE)
+                .withTotalPages(SIZE)
+                .withNumber(LAST), 
             
-            body("_links", notNullValue()).
-            body("_links.first", notNullValue()).
-            body("_links.first.href", equalTo(paginationLink(0, 1))).
+            new Links()
+                .withFirst(paginationLink(0, 1))
+                .withPrev(paginationLink(SECOND_TO_LAST, 1))
+                .withSelf(paginationLink(LAST, 1))
+                .withLast(paginationLink(LAST, 1))
+                .withCreate(API_URL)
+        );
 
-            body("_links.prev", notNullValue()).
-            body("_links.prev.href", equalTo(paginationLink(1, 1))).
-
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationLink(2, 1))).
-
-            body("_links.next", nullValue()).
-
-            body("_links.last", notNullValue()).
-            body("_links.last.href", equalTo(paginationLink(2, 1))).
-
-
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
-
-
-            body("page", notNullValue()).
-            body("page.size", equalTo(1)).
-            body("page.totalElements", equalTo(3)).
-            body("page.totalPages", equalTo(3)).
-            body("page.number", equalTo(2));
+        assertEmbeddedJsonFields(lastJson, 
+            assertPagination.validate(
+                when().
+                    get(paginationLink(LAST, 1)).
+                then().
+                    statusCode(OK.code)
+            ));
     }
 
     @Test
     public void testFindUniquePage() {
-        JSONObject json0 = new JSONObject()
-            .put("name", "Integration Test 0")
-            .put("password", "0000");
+        List<JSONObject> jsons = getListBody();
 
-        JSONObject json1 = new JSONObject()
-            .put("name", "Integration Test 1")
-            .put("password", "1111");
+        Map<String, List<Object>> expectedValues = new HashMap<>();
 
-        JSONObject json2 = new JSONObject()
-            .put("name", "Integration Test 2")
-            .put("password", "2222");
-
-        String id0 = insertOne(json0);
-        String id1 = insertOne(json1);
-        String id2 = insertOne(json2);
-
-        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
-
-        when().
-            get(API_URL).
-        then().
-            statusCode(OK.code).
-            body("_embedded", notNullValue()).
-            body(embeddedPath, notNullValue()).
-            body(embeddedPath+".id", hasItems(id0, id1, id2)).
-            body(embeddedPath+".name", hasItems(json0.get("name"), json1.get("name"), json2.get("name"))).
-            body(embeddedPath+".password", hasItems(json0.get("password"), json1.get("password"), json2.get("password"))).
-            body(embeddedPath+"."+EDIT_LINK_PATH, hasItems(editLink(id0), editLink(id1), editLink(id2))).
-
+        for(JSONObject json: jsons) {
+            String id = insert(json);
             
-            body("_links", notNullValue()).
-            body("_links.first", nullValue()).
+            if(expectedValues.containsKey("id")) {
+                expectedValues.get("id").add(id);
 
-            body("_links.prev", nullValue()).
+            } else {
+                List<Object> values = new ArrayList<>();
+                values.add(id);
+                expectedValues.put("id", values);
+            }
 
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationLink(0, 5))).
+            if(expectedValues.containsKey("editLink")) {
+                expectedValues.get("editLink").add(editLink(id));
 
-            body("_links.next", nullValue()).
+            } else {
+                List<Object> values = new ArrayList<>();
+                values.add(editLink(id));
+                expectedValues.put("editLink", values);
+            }
 
-            body("_links.last", nullValue()).
+            for(String field: jsonFieldsToAssert()) {
+                if(expectedValues.containsKey(field)) {
+                    expectedValues.get(field).add(json.get(field));
+    
+                } else {
+                    List<Object> values = new ArrayList<>();
+                    values.add(json.get(field));
+                    expectedValues.put(field, values);
+                }
+            }
+        }
 
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
+        String embeddedPath = embeddedPath();
 
+        final int SIZE = jsons.size();
 
-            body("page", notNullValue()).
-            body("page.size", equalTo(5)).
-            body("page.totalElements", equalTo(3)).
-            body("page.totalPages", equalTo(1)).
-            body("page.number", equalTo(0));
+        AssertPagination assertPagination = new AssertPagination(
+            new Page()
+                .withSize(SIZE)
+                .withTotalElements(SIZE)
+                .withTotalPages(1)
+                .withNumber(0), 
+            
+            new Links()
+                .withSelf(paginationLink(0, SIZE))
+                .withCreate(API_URL)
+        );
+
+        ValidatableResponse assertion = assertPagination.validate(
+                when().
+                    get(paginationLink(0, SIZE)).
+                then().
+                    statusCode(OK.code).
+                    body("_embedded", notNullValue()).
+                    body(embeddedPath, notNullValue()).
+                    body(embeddedPath+".id", equalTo(expectedValues.get("id"))).
+                    body(embeddedPath+"."+EDIT_LINK_PATH, equalTo(expectedValues.get("editLink")))
+            );
+
+        for(String field: jsonFieldsToAssert()) {
+            String path = embeddedPath + "." + field;
+            assertion.body(path, equalTo(expectedValues.get(field)));
+        }
     }
 
     @Test
     public void testFindEmpty() {
-        when().
-            get(API_URL).
-        then().
-            statusCode(OK.code).
-            body("_embedded", nullValue()).
+
+        AssertPagination assertPagination = new AssertPagination(
+            new Page()
+                .withSize(5)
+                .withTotalElements(0)
+                .withTotalPages(0)
+                .withNumber(0), 
             
-            body("_links", notNullValue()).
-            body("_links.first", nullValue()).
-
-            body("_links.prev", nullValue()).
-
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationLink(0, 5))).
-
-            body("_links.next", nullValue()).
-
-            body("_links.last", nullValue()).
-
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
+            new Links()
+                .withSelf(paginationLink(0, 5))
+                .withCreate(API_URL)
+        );
 
 
-            body("page", notNullValue()).
-            body("page.size", equalTo(5)).
-            body("page.totalElements", equalTo(0)).
-            body("page.totalPages", equalTo(0)).
-            body("page.number", equalTo(0));
+        assertPagination.validate(
+            when().
+                get(API_URL).
+            then().
+                statusCode(OK.code).
+                body("_embedded", nullValue()));
+            
     }
 
     @Test 
     public void testFindSorted() {
-        JSONObject json0 = new JSONObject()
-            .put("name", "Integration Test 0")
-            .put("password", "0000");
+        List<JSONObject> jsons = getListBody();
 
-        JSONObject json1 = new JSONObject()
-            .put("name", "Integration Test 1")
-            .put("password", "1111");
+        for (JSONObject json: jsons) {
+            String id = insert(json);
+            json.put("id", id);
+        }
 
-        JSONObject json2 = new JSONObject()
-            .put("name", "Integration Test 2")
-            .put("password", "2222");
+        String embeddedPath = embeddedPath();
 
-        String id0 = insertOne(json0);
-        String id1 = insertOne(json1);
-        String id2 = insertOne(json2);
+        final int MAX_SIZE = jsons.size();
 
-        String embeddedPath = "_embedded."+EMBEDDED_DATA_NAME;
-
-        when().
-            get(API_URL + "?sort=name,desc").
+        ValidatableResponse response = when().
+            get(paginationSortLink(0, MAX_SIZE, sortQuery())).
         then().
             statusCode(OK.code).
-            body("_embedded", notNullValue()).
-            body(embeddedPath, notNullValue()).
-            body(embeddedPath+".id", equalTo(List.of(id2, id1, id0))).
-            body(embeddedPath+".name", equalTo(List.of(json2.get("name"), json1.get("name"), json0.get("name")))).
-            body(embeddedPath+".password", equalTo(List.of(json2.get("password"), json1.get("password"), json0.get("password")))).
-            body(embeddedPath+"."+EDIT_LINK_PATH, equalTo(List.of(editLink(id2), editLink(id1), editLink(id0)))).
+            body("_embedded", notNullValue());
+        
+    
+        for (Integer index: sortIndexes()) {
+            JSONObject json = jsons.get(index);
+            String id = (String) json.get("id");
 
+            assertEmbeddedJsonFields(json, 
+                response.
+                    body(embeddedPath, notNullValue()).
+                    body(embeddedPath+".id", hasItem(id)).
+                    body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id)))
+            );
+
+        }
             
-            body("_links", notNullValue()).
-            body("_links.first", nullValue()).
+        AssertPagination assertPagination = new AssertPagination(
+            new Page()
+                .withSize(MAX_SIZE)
+                .withTotalElements(MAX_SIZE)
+                .withTotalPages(1)
+                .withNumber(0), 
+            
+            new Links()
+                .withSelf(paginationSortLink(0, MAX_SIZE, sortQuery()))
+                .withCreate(API_URL)
+        );
 
-            body("_links.prev", nullValue()).
-
-            body("_links.self", notNullValue()).
-            body("_links.self.href", equalTo(paginationSortLink(0, 5, "name,desc"))).
-
-            body("_links.next", nullValue()).
-
-            body("_links.last", nullValue()).
-
-            body("_links.create", notNullValue()).
-            body("_links.create.href", equalTo(API_URL)).
-
-
-            body("page", notNullValue()).
-            body("page.size", equalTo(5)).
-            body("page.totalElements", equalTo(3)).
-            body("page.totalPages", equalTo(1)).
-            body("page.number", equalTo(0));
-
+        assertPagination.validate(response);
     }
 
-    private String insertOne(JSONObject json) {
+    private String embeddedPath() {
+        return "_embedded."+EMBEDDED_DATA_NAME;
+    }
+
+    // abstract
+    private List<Integer> sortIndexes() {
+        return List.of(5, 4, 3, 2, 1, 0);
+    }
+
+    // abstract
+    private String sortQuery() {
+        return "?sort=name,desc";
+    }
+
+    // abstract
+    private JSONObject newBody() {
+        return jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/newUser.json");
+    }
+
+    // abstract
+    private JSONObject editBody() {
+        return jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/editUser.json");
+    }
+
+    @Override
+    public List<JSONObject> listBody() {
+        return List.of(
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user0.json"),
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user1.json"),
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user2.json"),
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user3.json"),
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user4.json"),
+            jsonFromFile("src/test/resources/estudo/s/integrationtest/account/user/user5.json")
+        );
+    }
+
+    // abstract
+    public List<String> jsonFieldsToAssert() {
+        return List.of(
+            "name",
+            "password"
+        );
+    }
+
+    public ValidatableResponse assertJsonFields(JSONObject json, ValidatableResponse response) {
+        ValidatableResponse lastResponse = null;
+
+        for(String field: jsonFieldsToAssert()) {
+            lastResponse = response.body(field, equalTo(json.get(field)));
+        }
+
+        return lastResponse;
+    }
+
+    public ValidatableResponse assertEmbeddedJsonFields(JSONObject json, ValidatableResponse response) {
+        ValidatableResponse lastResponse = null;
+
+        String embeddedPath = embeddedPath();
+
+        lastResponse = response.body(embeddedPath, notNullValue());
+
+        for(String field: jsonFieldsToAssert()) {
+            String path = embeddedPath + "." + field;
+            lastResponse = response.body(path, hasItem(json.get(field)));
+        }
+
+        return lastResponse;
+    }
+
+    private String insert(JSONObject json) {
 
         Response response = 
             given().
@@ -640,6 +671,26 @@ public class UserTest {
         return id;
     }
 
+    private JSONObject jsonFromFile(String path) {
+
+        try {
+            File file = new File(path);
+
+            if(!file.exists()) {
+                throw new RuntimeException(String.format("File not found. Path: %s", path));
+            }
+            
+            InputStream inputStream = new FileInputStream(path);
+            String jsonTxt = IOUtils.toString(inputStream, "UTF-8");
+
+            return new JSONObject(jsonTxt);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
     private String editLink(String id) {
         return API_URL + "/" + id;
     }
@@ -648,8 +699,8 @@ public class UserTest {
         return API_URL + "?page=" + page + "&size=" + size;
     }
 
-    private String paginationSortLink(int page, int size, String sort) {
-        return paginationLink(page, size) + "&sort=" + sort;
+    private String paginationSortLink(int page, int size, String sortQuery) {
+        return paginationLink(page, size) + sortQuery.replace('?', '&');
     }    
 
 }
