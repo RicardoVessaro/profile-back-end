@@ -6,11 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import estudo.s.ipsumintegrationtest.assertion.IntegrationTest;
+import estudo.s.ipsumintegrationtest.assertion.SortAssertion;
 import estudo.s.ipsumintegrationtest.assertion.pagination.AssertPagination;
 import estudo.s.ipsumintegrationtest.assertion.pagination.Links;
 import estudo.s.ipsumintegrationtest.assertion.pagination.Page;
 import estudo.s.ipsumintegrationtest.constants.ExpectedMessage;
 import estudo.s.ipsumintegrationtest.constants.Message;
+import estudo.s.ipsumintegrationtest.utils.QueryParam;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 
@@ -538,64 +540,80 @@ public class UserTest extends IntegrationTest {
 
     @Test 
     public void testFindSorted() {
+
         List<JSONObject> jsons = getListBody();
 
-        for (JSONObject json: jsons) {
-            String id = insert(json);
-            json.put("id", id);
-        }
+            for (JSONObject json: jsons) {
+                String id = insert(json);
+                json.put("id", id);
+            }
 
-        String embeddedPath = embeddedPath();
+            final int MAX_SIZE = jsons.size();
 
-        final int MAX_SIZE = jsons.size();
+        List<SortAssertion> sortAssertions = sortAssertions();
 
-        ValidatableResponse response = when().
-            get(paginationSortLink(0, MAX_SIZE, sortQuery())).
-        then().
-            statusCode(OK.code).
-            body("_embedded", notNullValue());
+        for(SortAssertion sortAssertion: sortAssertions) {
+
+            String embeddedPath = embeddedPath();
+
+            ValidatableResponse response = when().
+                get(paginationSortLink(0, MAX_SIZE, sortAssertion.getQueryParam())).
+            then().
+                statusCode(OK.code).
+                body("_embedded", notNullValue());
+            
         
-    
-        for (Integer index: sortIndexes()) {
-            JSONObject json = jsons.get(index);
-            String id = (String) json.get("id");
+            for (Integer index: sortAssertion.getSortIndexes()) {
+                JSONObject json = jsons.get(index);
+                String id = (String) json.get("id");
 
-            assertEmbeddedJsonFields(json, 
-                response.
-                    body(embeddedPath, notNullValue()).
-                    body(embeddedPath+".id", hasItem(id)).
-                    body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id)))
+                assertEmbeddedJsonFields(json, 
+                    response.
+                        body(embeddedPath, notNullValue()).
+                        body(embeddedPath+".id", hasItem(id)).
+                        body(embeddedPath+"."+EDIT_LINK_PATH, hasItem(editLink(id)))
+                );
+
+            }
+                
+            AssertPagination assertPagination = new AssertPagination(
+                new Page()
+                    .withSize(MAX_SIZE)
+                    .withTotalElements(MAX_SIZE)
+                    .withTotalPages(1)
+                    .withNumber(0), 
+                
+                new Links()
+                    .withSelf(paginationSortLink(0, MAX_SIZE, sortAssertion.getQueryParam()))
+                    .withCreate(API_URL)
             );
 
+            assertPagination.validate(response);
         }
-            
-        AssertPagination assertPagination = new AssertPagination(
-            new Page()
-                .withSize(MAX_SIZE)
-                .withTotalElements(MAX_SIZE)
-                .withTotalPages(1)
-                .withNumber(0), 
-            
-            new Links()
-                .withSelf(paginationSortLink(0, MAX_SIZE, sortQuery()))
-                .withCreate(API_URL)
-        );
 
-        assertPagination.validate(response);
+        
+    }
+
+    // abstract
+    private List<SortAssertion> sortAssertions() {
+        return List.of(
+            new SortAssertion(
+                new QueryParam()
+                    .put("sort", "name,desc")
+                    .toString(), 
+                List.of(5, 4, 3, 2, 1, 0)
+            ),
+            new SortAssertion(
+                new QueryParam()
+                    .put("sort", "name,asc")
+                    .toString(), 
+                List.of(0, 1, 2, 3, 4, 5)
+            )
+        );
     }
 
     private String embeddedPath() {
         return "_embedded."+EMBEDDED_DATA_NAME;
-    }
-
-    // abstract
-    private List<Integer> sortIndexes() {
-        return List.of(5, 4, 3, 2, 1, 0);
-    }
-
-    // abstract
-    private String sortQuery() {
-        return "?sort=name,desc";
     }
 
     // abstract
