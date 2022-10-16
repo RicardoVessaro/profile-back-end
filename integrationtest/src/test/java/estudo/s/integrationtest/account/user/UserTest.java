@@ -1,9 +1,39 @@
 package estudo.s.integrationtest.account.user;
 
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.BAD_REQUEST;
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.CREATED;
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.NOT_FOUND;
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.NO_CONTENT;
+import static estudo.s.ipsumintegrationtest.constants.HttpStatus.OK;
+import static io.restassured.RestAssured.delete;
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
+import static org.assertj.core.api.Assertions.assertThat;
+// import static io.restassured.module.jsv.JsonSchemaValidator.*;
+// import static io.restassured.matcher.RestAssuredMatchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import estudo.s.ipsumintegrationtest.assertion.IntegrationTest;
 import estudo.s.ipsumintegrationtest.assertion.SortAssertion;
@@ -16,40 +46,41 @@ import estudo.s.ipsumintegrationtest.utils.QueryParam;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 
-import static io.restassured.RestAssured.*;
-// import static io.restassured.module.jsv.JsonSchemaValidator.*;
-// import static io.restassured.matcher.RestAssuredMatchers.*;
-import static org.hamcrest.Matchers.*;
-import static estudo.s.ipsumintegrationtest.constants.HttpStatus.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.*;
-
+@TestInstance(Lifecycle.PER_CLASS)
 public class UserTest extends IntegrationTest {
-
-    private static final String BASE_URL = "http://localhost:8080";
-
-    private static final String REST_URL = "/account/api/v1";
-
-    private static final String API_URL = BASE_URL + REST_URL + "/users";
 
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     private static final String EDIT_LINK_PATH = "_links.edit.href";
 
-    private static final String EMBEDDED_DATA_NAME = "userDTOList";
+    private static final String BASE_URL_PROPERTY = "integrationtest.rest.baseurl";
     
     private List<String> deleteLinks = new ArrayList<>();
 
+    private Properties properties = new Properties();
+
+    @BeforeAll
+    public void setup() {
+
+        String propertiesPath = propertiesPath();
+
+        try (InputStream input = new FileInputStream(propertiesPath)) {
+            
+            properties.load(input);
+            
+        } catch (IOException e) {
+            
+            e.printStackTrace();
+
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    // can be overrided
+    private String propertiesPath() {
+        return "test.properties";
+    }
 
     @AfterEach
     public void teardown() {
@@ -58,7 +89,7 @@ public class UserTest extends IntegrationTest {
         }        
 
         when().
-            get(API_URL).
+            get(apiUrl()).
         then().
             statusCode(OK.code).
             body("_embedded", nullValue());
@@ -68,6 +99,7 @@ public class UserTest extends IntegrationTest {
 
     @Test
     public void testInsert() {
+        
         JSONObject json = newBody();
 
         Response response = 
@@ -76,7 +108,7 @@ public class UserTest extends IntegrationTest {
                     contentType(JSON_CONTENT_TYPE).
                     body(json.toString()).
                 when().
-                    post(API_URL).
+                    post(apiUrl()).
                 then().
                     statusCode(CREATED.code).
                     body("id", notNullValue())
@@ -106,7 +138,7 @@ public class UserTest extends IntegrationTest {
             contentType(JSON_CONTENT_TYPE).
             body(new JSONObject().toString()).
         when().
-            post(API_URL).
+            post(apiUrl()).
         then().
             statusCode(BAD_REQUEST.code).
             body("httpStatus", equalTo(BAD_REQUEST.description)).
@@ -331,7 +363,7 @@ public class UserTest extends IntegrationTest {
                 withSelf(paginationLink(0, 1)).
                 withNext(paginationLink(1, 1)).
                 withLast(paginationLink(LAST, 1)).
-                withCreate(API_URL)
+                withCreate(apiUrl())
         );
 
         assertEmbeddedJsonFields(firstJson, 
@@ -381,7 +413,7 @@ public class UserTest extends IntegrationTest {
                 .withSelf(paginationLink(1, 1))
                 .withNext(paginationLink(2, 1))
                 .withLast(paginationLink(LAST, 1))
-                .withCreate(API_URL));
+                .withCreate(apiUrl()));
 
         assertEmbeddedJsonFields(secondJson, 
             assertPagination.validate(
@@ -429,7 +461,7 @@ public class UserTest extends IntegrationTest {
                 .withPrev(paginationLink(SECOND_TO_LAST, 1))
                 .withSelf(paginationLink(LAST, 1))
                 .withLast(paginationLink(LAST, 1))
-                .withCreate(API_URL)
+                .withCreate(apiUrl())
         );
 
         assertEmbeddedJsonFields(lastJson, 
@@ -493,7 +525,7 @@ public class UserTest extends IntegrationTest {
             
             new Links()
                 .withSelf(paginationLink(0, SIZE))
-                .withCreate(API_URL)
+                .withCreate(apiUrl())
         );
 
         ValidatableResponse assertion = assertPagination.validate(
@@ -525,13 +557,13 @@ public class UserTest extends IntegrationTest {
             
             new Links()
                 .withSelf(paginationLink(0, 5))
-                .withCreate(API_URL)
+                .withCreate(apiUrl())
         );
 
 
         assertPagination.validate(
             when().
-                get(API_URL).
+                get(apiUrl()).
             then().
                 statusCode(OK.code).
                 body("_embedded", nullValue()));
@@ -585,7 +617,7 @@ public class UserTest extends IntegrationTest {
                 
                 new Links()
                     .withSelf(paginationSortLink(0, MAX_SIZE, sortAssertion.getQueryParam()))
-                    .withCreate(API_URL)
+                    .withCreate(apiUrl())
             );
 
             assertPagination.validate(response);
@@ -613,7 +645,8 @@ public class UserTest extends IntegrationTest {
     }
 
     private String embeddedPath() {
-        return "_embedded."+EMBEDDED_DATA_NAME;
+        String embeddedDataName = properties.getProperty(embeddedDataNameProperty());
+        return "_embedded."+ embeddedDataName;
     }
 
     // abstract
@@ -677,7 +710,7 @@ public class UserTest extends IntegrationTest {
             given().
                 contentType(JSON_CONTENT_TYPE).
                 body(json.toString()).
-            post(API_URL).
+            post(apiUrl()).
             then().
                 extract().response();
 
@@ -710,15 +743,33 @@ public class UserTest extends IntegrationTest {
     }
 
     private String editLink(String id) {
-        return API_URL + "/" + id;
+        return apiUrl() + "/" + id;
     }
 
     private String paginationLink(int page, int size) {
-        return API_URL + "?page=" + page + "&size=" + size;
+        return apiUrl() + "?page=" + page + "&size=" + size;
     }
 
     private String paginationSortLink(int page, int size, String sortQuery) {
         return paginationLink(page, size) + sortQuery.replace('?', '&');
     }    
+
+    private String apiUrl() {
+        String baseUrl = properties.getProperty(BASE_URL_PROPERTY);
+
+        String apiUrl = properties.getProperty(apiUrlProperty());
+
+        return baseUrl + apiUrl;
+    }
+
+    // abstract
+    private String apiUrlProperty() {
+        return "integrationtest.rest.url.user";
+    }
+
+    // abstract
+    private String embeddedDataNameProperty() {
+        return "integrationtest.rest.embeddeddataname.user";
+    }
 
 }
