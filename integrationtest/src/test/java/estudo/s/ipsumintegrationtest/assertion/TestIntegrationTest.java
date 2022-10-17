@@ -1,15 +1,13 @@
-package estudo.s.ipsumintegrationtest;
+package estudo.s.ipsumintegrationtest.assertion;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
-import estudo.s.ipsumintegrationtest.assertion.IntegrationTest;
 import estudo.s.ipsumintegrationtest.constants.Message;
 import estudo.s.ipsumintegrationtest.exception.IpsumIntegrationTestException;
 
