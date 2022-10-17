@@ -1,4 +1,4 @@
 integrationtest/.vscode/settings.json
 *.class
 *.log
-/integrationtest/target/
+integrationtest/target
