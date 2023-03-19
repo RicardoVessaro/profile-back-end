@@ -42,13 +42,12 @@ import estudo.s.ipsumintegrationtest.assertion.pagination.Links;
 import estudo.s.ipsumintegrationtest.assertion.pagination.Page;
 import estudo.s.ipsumintegrationtest.constants.ExpectedMessage;
 import estudo.s.ipsumintegrationtest.constants.Message;
-import estudo.s.ipsumintegrationtest.utils.JsonUtil;
 import estudo.s.ipsumintegrationtest.utils.QueryParam;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class UserTest extends IntegrationTest {
+public class UserTestCopy2 extends IntegrationTest {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
 
@@ -681,7 +680,7 @@ public class UserTest extends IntegrationTest {
     }
 
     public ValidatableResponse assertJsonFields(JSONObject json, ValidatableResponse response) {
-        ValidatableResponse lastResponse = response;
+        ValidatableResponse lastResponse = null;
 
         for(String field: jsonFieldsToAssert()) {
             lastResponse = response.body(field, equalTo(json.get(field)));
@@ -691,7 +690,7 @@ public class UserTest extends IntegrationTest {
     }
 
     public ValidatableResponse assertEmbeddedJsonFields(JSONObject json, ValidatableResponse response) {
-        ValidatableResponse lastResponse = response;
+        ValidatableResponse lastResponse = null;
 
         String embeddedPath = embeddedPath();
 
@@ -725,23 +724,22 @@ public class UserTest extends IntegrationTest {
 
     private JSONObject jsonFromFile(String path) {
 
-        return new JsonUtil().fromFile(path);
-        // try {
-        //     File file = new File(path);
+        try {
+            File file = new File(path);
 
-        //     if(!file.exists()) {
-        //         throw new RuntimeException(String.format("File not found. Path: %s", path));
-        //     }
+            if(!file.exists()) {
+                throw new RuntimeException(String.format("File not found. Path: %s", path));
+            }
             
-        //     InputStream inputStream = new FileInputStream(path);
-        //     String jsonTxt = IOUtils.toString(inputStream, "UTF-8");
+            InputStream inputStream = new FileInputStream(path);
+            String jsonTxt = IOUtils.toString(inputStream, "UTF-8");
 
-        //     return new JSONObject(jsonTxt);
+            return new JSONObject(jsonTxt);
 
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        //     throw new RuntimeException(e);
-        // }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private String editLink(String id) {
